@@ -1,4 +1,3 @@
-
 import discord
 from discord.ext import commands
 import random
@@ -47,12 +46,17 @@ async def noitu(ctx):
     used_words = {current_word}
     game_running = True
 
-    await ctx.send(f"🎮 Bắt đầu nối từ!\n👉 Từ hiện tại: **{current_word}**")
+    await ctx.send(
+        f"🎮 Bắt đầu nối từ!\n"
+        f"👉 Từ hiện tại: **{current_word}**"
+    )
 
 @bot.command()
 async def stop(ctx):
     global game_running
+
     game_running = False
+
     await ctx.send("🛑 Đã dừng nối từ!")
 
 @bot.event
@@ -72,40 +76,80 @@ async def on_message(message):
     if text.startswith("!"):
         return
 
+    # =========================
+    # KHÔNG PHẢI TỪ THẬT
+    # =========================
+
     if text not in WORDS:
-        await message.add_reaction("❌")
+
+        await message.reply(
+            "<a:sai:1507364168326709329>"
+        )
+
         return
 
+    # =========================
+    # TRÙNG TỪ
+    # =========================
+
     if text in used_words:
-        await message.reply("⚠️ Từ này dùng rồi!")
+
+        await message.reply(
+            "⚠️ Từ này dùng rồi!"
+        )
+
         return
 
     last_word = current_word.split()[-1]
     first_word = text.split()[0]
 
+    # =========================
+    # NỐI SAI
+    # =========================
+
     if first_word != last_word:
-        await message.add_reaction("❌")
+
+        await message.reply(
+            "<a:sai:1507364168326709329>"
+        )
+
         return
 
+    # =========================
+    # ĐÚNG
+    # =========================
+
     used_words.add(text)
+
     current_word = text
 
-    await message.add_reaction("✅")
+    await message.reply(
+        "<a:ng:1507364188547190965>"
+    )
+
+    # =========================
+    # CHECK HẾT TỪ
+    # =========================
 
     possible = []
 
     end_word = text.split()[-1]
 
     for w in WORDS:
+
         if w not in used_words:
+
             if w.split()[0] == end_word:
+
                 possible.append(w)
 
     if len(possible) <= 2:
+
         game_running = False
+
         await message.channel.send(
-            f"🏆 Không còn nhiều từ để nối tiếp!\n"
-            f"{message.author.mention} thắng và nhận 2000 xu 💰"
+            f"🏆 {message.author.mention} thắng!\n"
+            f"❌ Không còn nhiều từ để nối tiếp!"
         )
 
 bot.run(TOKEN)
