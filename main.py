@@ -27,29 +27,46 @@ except:
     print("❌ Không load được từ điển")
 
 # =========================
-# NỐI TỪ
+# GAME
 # =========================
 
 current_word = ""
 used_words = set()
 game_running = False
 
+# =========================
+# READY
+# =========================
+
 @bot.event
 async def on_ready():
     print(f"✅ {bot.user} online!")
+
+# =========================
+# START GAME
+# =========================
 
 @bot.command()
 async def noitu(ctx):
     global current_word, used_words, game_running
 
     current_word = random.choice(WORDS)
+
     used_words = {current_word}
+
     game_running = True
 
-    await ctx.send(
-        f"🎮 Bắt đầu nối từ!\n"
-        f"👉 Từ hiện tại: **{current_word}**"
+    embed = discord.Embed(
+        title="🧠 NỐI TỪ",
+        description=f"🎮 Từ bắt đầu:\n👉 **{current_word}**",
+        color=0x2f3136
     )
+
+    await ctx.send(embed=embed)
+
+# =========================
+# STOP
+# =========================
 
 @bot.command()
 async def stop(ctx):
@@ -58,6 +75,10 @@ async def stop(ctx):
     game_running = False
 
     await ctx.send("🛑 Đã dừng nối từ!")
+
+# =========================
+# MESSAGE
+# =========================
 
 @bot.event
 async def on_message(message):
@@ -77,14 +98,28 @@ async def on_message(message):
         return
 
     # =========================
+    # EMOJI
+    # =========================
+
+    emoji_dung = discord.PartialEmoji(
+        name="ng",
+        id=1507364188547190965,
+        animated=True
+    )
+
+    emoji_sai = discord.PartialEmoji(
+        name="sai",
+        id=1507364168326709329,
+        animated=True
+    )
+
+    # =========================
     # KHÔNG PHẢI TỪ THẬT
     # =========================
 
     if text not in WORDS:
 
-        await message.reply(
-            "<a:sai:1507364168326709329>"
-        )
+        await message.add_reaction(emoji_sai)
 
         return
 
@@ -94,13 +129,12 @@ async def on_message(message):
 
     if text in used_words:
 
-        await message.reply(
-            "⚠️ Từ này dùng rồi!"
-        )
+        await message.reply("⚠️ Từ này dùng rồi!")
 
         return
 
     last_word = current_word.split()[-1]
+
     first_word = text.split()[0]
 
     # =========================
@@ -109,9 +143,7 @@ async def on_message(message):
 
     if first_word != last_word:
 
-        await message.reply(
-            "<a:sai:1507364168326709329>"
-        )
+        await message.add_reaction(emoji_sai)
 
         return
 
@@ -123,9 +155,7 @@ async def on_message(message):
 
     current_word = text
 
-    await message.reply(
-        "<a:ng:1507364188547190965>"
-    )
+    await message.add_reaction(emoji_dung)
 
     # =========================
     # CHECK HẾT TỪ
@@ -143,13 +173,27 @@ async def on_message(message):
 
                 possible.append(w)
 
-    if len(possible) <= 2:
+    # =========================
+    # WIN
+    # =========================
 
-        game_running = False
+    if len(possible) <= 2:
 
         await message.channel.send(
             f"🏆 {message.author.mention} thắng!\n"
-            f"❌ Không còn nhiều từ để nối tiếp!"
+            f"❌ Không còn từ để nối tiếp!"
         )
+
+        current_word = random.choice(WORDS)
+
+        used_words = {current_word}
+
+        await message.channel.send(
+            f"🎮 Lượt mới bắt đầu với từ:\n👉 **{current_word}**"
+        )
+
+# =========================
+# RUN
+# =========================
 
 bot.run(TOKEN)
