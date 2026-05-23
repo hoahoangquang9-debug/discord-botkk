@@ -220,8 +220,8 @@ async def on_message(message):
 # TOKEN
 # =========================================
 
-bot.run(os.environ["DISCORD_TOKEN"])
-bot.run(TOKEN)
+bot.run(os.environ["TOKEN"])
+
 
 
 
